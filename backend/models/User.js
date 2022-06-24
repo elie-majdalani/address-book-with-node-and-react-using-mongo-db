@@ -9,8 +9,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  addressId:{
+    type: [string],
+  },
 });
 
 const User = mongoose.model("User", UserSchema);
+
 
 module.exports = User;
