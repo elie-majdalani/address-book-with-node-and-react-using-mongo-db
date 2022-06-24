@@ -2,11 +2,12 @@ const express = require("express");
 const userModel = require("./models");
 const app = express();
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 app.post("/signup", async (request, response) => {
-    const user = new userModel(request.body);
+    const user = new userModel({ username: request.body.username, password: bcrypt.hashSync(request.body.password, 10) });
     try {
-        const available = await userModel.find({ name: request.body.name, age: request.body.age });
+        const available = await userModel.find({ username: request.body.username, password: bcrypt.hashSync(request.body.password, 10) });
         try {
             if (available.length === 1) {
                 return response.status(403).send("User exists");
@@ -24,27 +25,25 @@ app.post("/signup", async (request, response) => {
 });
 
 app.post("/signin", async (request, response) => {
-    const user = await userModel.find({ name: request.body.name, age: request.body.age });
-
     try {
-        if (user.length === 0) {
-
-            return response.status(404).send("User not found");
-
+        var user = await userModel.findOne({ username: request.body.username }).exec();
+        if(!user) {
+            return response.status(400).send({ message: "The username and or password does not exist" });
         }
-        // jwt date set to 60 mins
+        if(!bcrypt.compareSync(request.body.password, user.password)) {
+            return response.status(400).send({ message: "The username and or password does not exist" });
+        }
         let data = {
             time: Date(),
-            userId: user[0]._id.toString(),
-        }
-
-        const token = jwt.sign(data, "secretkey", (err, token) => {
+            userId: user._id.toString(),
+          };
+          const token = jwt.sign(data, "secretkey", (err, token) => {
             return response.send(token);
         });
-        } catch (error) {
-            return response.status(500).send(error);
-        }
-    });
+    } catch (error) {
+        response.status(500).send(error);
+    }
+});
     // app.get("/", verifyToken, (req, res) => {
     //     jwt.verify(req.token, "secretkey", (err, authData) => {
     //       if (err) {
