@@ -2,12 +2,15 @@ import '.styles/styles.css';
 import { useState, useEffect } from 'react';
 
 
-function Login( {setIsLoggedIn} ) {
+function Login( {setIsLoggedIn,setLogin} ) {
+
+    //  switch between pages
+    const switchPage = () => {
+        setLogin(false);
+    }
     //check if token valid on refresh
     const token = localStorage.getItem('token');
-    debugger
     useEffect(() => {
-        debugger
         if (token) {
             setIsLoggedIn(true);
         }
@@ -47,6 +50,7 @@ function Login( {setIsLoggedIn} ) {
                 <input type="text" placeholder="Username" onBlur={(e) => { setUsername(e.currentTarget.value) }} />
                 <input type="password" placeholder="Password" onBlur={(e) => { setPassword(e.currentTarget.value) }} />
                 <button onClick={loginUser} >Login</button>
+                <button onClick={switchPage}>SignUp</button>
             </div>
         </div>
     );

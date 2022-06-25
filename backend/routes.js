@@ -93,7 +93,7 @@ app.get("/getAddress", verifyToken, async (request, response) => {
 
 
 //  Seach by name
-app.get("/searchbyname", verifyToken, async (request, response) => {
+app.post("/searchbyname", verifyToken, async (request, response) => {
     jwt.verify(request.token, "secretkey", async (err, authData) => {
         if (err) {
             res.sendStatus(403).send({ message: "Unauthorized" });
@@ -111,7 +111,7 @@ app.get("/searchbyname", verifyToken, async (request, response) => {
 });
 
 // Search by phone
-app.get("/searchbyphone", verifyToken, async (request, response) => {
+app.post("/searchbyphone", verifyToken, async (request, response) => {
     jwt.verify(request.token, "secretkey", async (err, authData) => {
         if (err) {
             res.sendStatus(403).send({ message: "Unauthorized" });
@@ -129,7 +129,7 @@ app.get("/searchbyphone", verifyToken, async (request, response) => {
 });
 
 // Seatch by email
-app.get("/searchbyemail", verifyToken, async (request, response) => {
+app.post("/searchbyemail", verifyToken, async (request, response) => {
     jwt.verify(request.token, "secretkey", async (err, authData) => {
         if (err) {
             res.sendStatus(403).send({ message: "Unauthorized" });
@@ -147,7 +147,7 @@ app.get("/searchbyemail", verifyToken, async (request, response) => {
 });
 
 // Search by relationship
-app.get("/searchbyrelationship", verifyToken, async (request, response) => {
+app.post("/searchbyrelationship", verifyToken, async (request, response) => {
     jwt.verify(request.token, "secretkey", async (err, authData) => {
         if (err) {
             res.sendStatus(403).send({ message: "Unauthorized" });

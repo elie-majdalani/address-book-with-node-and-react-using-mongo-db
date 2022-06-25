@@ -6,11 +6,15 @@ import { useState } from 'react';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [login,setLogin] = useState(true);
   return (
     <body>
-    {isLoggedIn &&<Login setIsLoggedIn={setIsLoggedIn} />}
-    {isLoggedIn &&<Signup />}
-    {!isLoggedIn &&<Home />}
+      {console.log(isLoggedIn)}
+    {!isLoggedIn && login && <Login setIsLoggedIn={setIsLoggedIn} setLogin={setLogin} />}
+    {!isLoggedIn && !login &&<Signup setLogin={setLogin}/>}
+    {isLoggedIn &&<Home setIsLoggedIn={setIsLoggedIn}/>}
     </body>
   );
 }
+
+export default App;

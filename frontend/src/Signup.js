@@ -1,9 +1,13 @@
 import '.styles/styles.css';
 import { useState } from 'react';
 
-function Signup() {
+function Signup({setLogin}) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+//  switch between pages
+    const switchPage = () => {
+        setLogin(true);
+    }
 
     const signupUser = async () =>{   
         try {
@@ -19,7 +23,6 @@ function Signup() {
                 })
             });
             const data = await res.json();
-            debugger
             if (data.status === 'success') {
                 localStorage.setItem('token', data.data);
             }
@@ -35,6 +38,7 @@ function Signup() {
                 <input type="text" placeholder="Username" onBlur={(e)=>{ setUsername(e.currentTarget.value) }} />
                 <input type="password" placeholder="Password" onBlur={(e)=>{ setPassword(e.currentTarget.value) }}/>
                 <button onClick={signupUser} >Signup</button>
+                <button onClick={switchPage}>login</button>
             </div>
         </div>
     )
