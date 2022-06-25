@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   addressId:{
-    type: [string],
+    type: [String],
   },
 });
 

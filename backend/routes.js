@@ -1,6 +1,6 @@
 const express = require("express");
 const userModel = require("./models/User");
-const addressModel = require(".models/Address");
+const addressModel = require("./models/Address");
 const app = express();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -25,7 +25,7 @@ app.post("/signup", async (request, response) => {
     }
 });
 
-app.post("/signin", async (request, response) => {
+app.get("/signin", async (request, response) => {
     try {
         var user = await userModel.findOne({ username: request.body.username }).exec();
         if (!user) {
@@ -46,9 +46,9 @@ app.post("/signin", async (request, response) => {
     }
 });
 
-// add that adds a new address to the user
+//adds a new address to the user
 app.post("/addAddress", verifyToken, async (request, response) => {
-    jwt.verify(req.token, "secretkey", (err, authData) => {
+    jwt.verify(request.token, "secretkey", async (err, authData) => {
         if (err) {
             res.sendStatus(403).send({ message: "Unauthorized" });
         } else {
@@ -59,35 +59,61 @@ app.post("/addAddress", verifyToken, async (request, response) => {
                 email: request.body.email,
                 location: {
                     type: "Point",
-                    coordinates: [request.body.longitude, request.body.latitude],
+                    coordinates: [request.body.longtitude, request.body.latitude],
                 },
             });
             try {
+                await address.save();
                 const user = await userModel.findById(authData.userId);
                 user.addressId.push(address._id.toString());
-                await user.save();
-                response.send("success");
+                await user.save()
+                response.send("success")
             }
             catch (error) {
                 response.status(500).send(error);
             }
         }
     });
+});
+
+app.get("/getAddress", verifyToken, async (request, response) => {
+    jwt.verify(request.token, "secretkey", async (err, authData) => {
+        if (err) {
+            res.sendStatus(403).send({ message: "Unauthorized" });
+        } else {
+            const user = await userModel.findById(authData.userId);
+            const address = await addressModel.find({ _id: { $in: user.addressId } });
+            response.send(address);
+        }
+    })});
+
+    
+app.get("/search", verifyToken, async (request, response) => {
+    jwt.verify(request.token, "secretkey", async (err, authData) => {
+        if (err) {
+            res.sendStatus(403).send({ message: "Unauthorized" });
+        } else {
+            const user = await userModel.findById(authData.userId);
+            const address = await addressModel.find({ _id: { $in: user.addressId } });
+            const search = address.find( { $text: { $search: "elie" } } )
+            response.send(search);
+        }
+    })});
+
+
+
+
+function verifyToken(req, res, next) {
+    const token = req.headers["authorization"];
+    if (typeof token !== "undefined") {
+        const bearer = token.split(" ");
+        const bearerToken = bearer[1];
+        req.token = bearerToken;
+        next();
+    }
+    else {
+        return res.status(403).send("Forbidden");
+    }
 }
-);
-
-
-// app.get("/", verifyToken, (req, res) => {
-//     jwt.verify(req.token, "secretkey", (err, authData) => {
-//       if (err) {
-//         res.sendStatus(403);
-//       } else {
-//         res.json({
-//           message: "sucess...",
-//           authData:authData.userId
-//         });
-//       }
-//     });
-//   });
 
 module.exports = app;
