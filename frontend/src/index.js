@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '.styles/styles.css';
+import './styles/styles.css';
 import App from './App';
+
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Loin/>
-    <Signup/>
     <App />
   </React.StrictMode>
 );
-
