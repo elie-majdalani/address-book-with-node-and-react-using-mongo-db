@@ -87,20 +87,78 @@ app.get("/getAddress", verifyToken, async (request, response) => {
         }
     })});
 
-    
-app.get("/search", verifyToken, async (request, response) => {
+
+//  Seach by name
+app.get("/searchbyname", verifyToken, async (request, response) => {
     jwt.verify(request.token, "secretkey", async (err, authData) => {
         if (err) {
             res.sendStatus(403).send({ message: "Unauthorized" });
         } else {
             const user = await userModel.findById(authData.userId);
             const address = await addressModel.find({ _id: { $in: user.addressId } });
-            const search = address.find( { $text: { $search: "elie" } } )
-            response.send(search);
+            const search = request.body.search;
+            const result = address.filter((address) => {
+                return address.fullname.toLowerCase().includes(search.toLowerCase());
+            }
+            );
+            response.send(result);
         }
-    })});
+    })
+});
 
+// Search by phone
+app.get("/searchbyphone", verifyToken, async (request, response) => {
+    jwt.verify(request.token, "secretkey", async (err, authData) => {
+        if (err) {
+            res.sendStatus(403).send({ message: "Unauthorized" });
+        } else {
+            const user = await userModel.findById(authData.userId);
+            const address = await addressModel.find({ _id: { $in: user.addressId } });
+            const search = request.body.search;
+            const result = address.filter((address) => {
+                return address.phone.toLowerCase().includes(search.toLowerCase());
+            }
+            );
+            response.send(result);
+        }
+    })
+});
 
+// Seatch by email
+app.get("/searchbyemail", verifyToken, async (request, response) => {
+    jwt.verify(request.token, "secretkey", async (err, authData) => {
+        if (err) {
+            res.sendStatus(403).send({ message: "Unauthorized" });
+        } else {
+            const user = await userModel.findById(authData.userId);
+            const address = await addressModel.find({ _id: { $in: user.addressId } });
+            const search = request.body.search;
+            const result = address.filter((address) => {
+                return address.email.toLowerCase().includes(search.toLowerCase());
+            }
+            );
+            response.send(result);
+        }
+    })
+});
+
+// Search by relationship
+app.get("/searchbyrelationship", verifyToken, async (request, response) => {
+    jwt.verify(request.token, "secretkey", async (err, authData) => {
+        if (err) {
+            res.sendStatus(403).send({ message: "Unauthorized" });
+        } else {
+            const user = await userModel.findById(authData.userId);
+            const address = await addressModel.find({ _id: { $in: user.addressId } });
+            const search = request.body.search;
+            const result = address.filter((address) => {
+                return address.relationship.toLowerCase().includes(search.toLowerCase());
+            }
+            );
+            response.send(result);
+        }
+    })
+});
 
 
 function verifyToken(req, res, next) {
