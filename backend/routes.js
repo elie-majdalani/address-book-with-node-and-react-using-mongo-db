@@ -25,7 +25,7 @@ app.post("/signup", async (request, response) => {
     }
 });
 
-app.get("/signin", async (request, response) => {
+app.post("/signin", async (request, response) => {
     try {
         var user = await userModel.findOne({ username: request.body.username }).exec();
         if (!user) {
@@ -39,7 +39,11 @@ app.get("/signin", async (request, response) => {
             userId: user._id.toString(),
         };
         const token = jwt.sign(data, "secretkey", (err, token) => {
-            return response.send(token);
+            data = {
+                status:"success",
+                token: token,
+            }
+            return response.json(data);
         });
     } catch (error) {
         response.status(500).send(error);
