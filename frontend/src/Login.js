@@ -2,7 +2,7 @@ import '.styles/styles.css';
 import { useState, useEffect } from 'react';
 
 
-function Login( {setIsLoggedIn,setLogin} ) {
+const Login = ({ setIsLoggedIn, setLogin }) => {
 
     //  switch between pages
     const switchPage = () => {

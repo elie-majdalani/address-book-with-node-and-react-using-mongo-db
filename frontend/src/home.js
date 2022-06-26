@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react';
+import Map from './Map'
+import 'leaflet/dist/leaflet.css';
+
 const Home = ({ setIsLoggedIn }) => {
     const [fullname, setFullname] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [relationship, setRelationship] = useState('');
-    const [longtitude, setLongtitude] = useState();
-    const [latitude, setLatitude] = useState();
     const [address, setAddress] = useState({});
     const [search, setSearch] = useState('');
     const [searchType, setSearchType] = useState('fullname');
+    //position of the marker to be sent to map
+    const center = {
+        lat: 33.8938,
+        lng: 35.5018,
+    }
+    const [position, setPosition] = useState(center)
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -113,7 +120,7 @@ const Home = ({ setIsLoggedIn }) => {
                 phone,
                 relationship,
                 email,
-                coordinates: [longtitude, latitude]
+                coordinates: [position.lat, position.lng]
             }
             const res = await fetch("http://127.0.0.1:3001/addAddress", {
                 method: 'POST',
@@ -129,8 +136,6 @@ const Home = ({ setIsLoggedIn }) => {
                 setFullname(``);
                 setPhone(``);
                 setRelationship(``);
-                setLongtitude(``);
-                setLatitude(``);
             }
         }
         catch (err) {
@@ -161,12 +166,14 @@ const Home = ({ setIsLoggedIn }) => {
                     <input type="text" value={phone} placeholder="Phone Number" onChange={e => { setPhone(e.currentTarget.value) }} />
                     <input type="text" value={relationship} placeholder="Relationship" onChange={e => { setRelationship(e.currentTarget.value) }} />
                     <input type="text" value={email} placeholder="Email" onChange={e => { setEmail(e.currentTarget.value) }} />
-                    <input type="text" value={longtitude} placeholder="Location" onChange={e => { setLongtitude(e.currentTarget.value) }} />
-                    <input type="text" value={latitude} placeholder="Location" onChange={e => { setLatitude(e.currentTarget.value) }} />
+                    <div className="google-maps">
+                        <div className="google-maps-map">
+                            <Map position={position} setPosition={setPosition} />
+                        </div>
+                    </div>
                     <button onClick={handleSubmit}>Add</button>
                 </div>
                 <div className='Contatcs'>
-                    {console.log(address)}
                     {address.length > 0 && address.map((data, index) => {
                         return (
                             <div key={index}>
@@ -174,7 +181,7 @@ const Home = ({ setIsLoggedIn }) => {
                                 <h1>{data.phone}</h1>
                                 <h1>{data.relationship}</h1>
                                 <h1>{data.email}</h1>
-                                <h1>{data.coordinates}</h1>
+                                {data.location.coordinates[0] != null && <Map position={{ lat: data.location.coordinates[0], lng: data.location.coordinates[1] }} setPosition={setPosition} />}
                             </div>)
                     })}
                 </div>
