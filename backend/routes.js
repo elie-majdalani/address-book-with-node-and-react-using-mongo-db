@@ -5,34 +5,34 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-app.post("/signup", async (request, response) => {
-    const user = new userModel({ username: request.body.username, password: bcrypt.hashSync(request.body.password, 10) });
+app.post("/signup", async (req, res) => {
+    const user = new userModel({ username: req.body.username, password: bcrypt.hashSync(req.body.password, 10) });
     try {
-        const available = await userModel.find({ username: request.body.username, password: bcrypt.hashSync(request.body.password, 10) });
+        const available = await userModel.find({ username: req.body.username, password: bcrypt.hashSync(req.body.password, 10) });
         try {
             if (available.length === 1) {
-                return response.status(403).send("User exists");
+                return res.status(403).send("User exists");
             }
             await user.save();
-            response.send("sucess");
+            res.send("sucess");
         }
         catch (error) {
-            return response.status(500).send(error);
+            return res.status(500).send(error);
         }
     }
     catch (error) {
-        return response.status(500).send(error);
+        return res.status(500).send(error);
     }
 });
 
-app.post("/signin", async (request, response) => {
+app.post("/signin", async (req, res) => {
     try {
-        var user = await userModel.findOne({ username: request.body.username }).exec();
+        var user = await userModel.findOne({ username: req.body.username }).exec();
         if (!user) {
-            return response.status(400).send({ message: "The username and or password does not exist" });
+            return res.status(400).send({ message: "The username and or password does not exist" });
         }
-        if (!bcrypt.compareSync(request.body.password, user.password)) {
-            return response.status(400).send({ message: "The username and or password does not exist" });
+        if (bcrypt.hashSync(req.body.password, 10) === user.password) {
+            return res.status(400).send({ message: "The username and or password does not exist" });
         }
         let data = {
             time: Date(),
@@ -40,128 +40,90 @@ app.post("/signin", async (request, response) => {
         };
         const token = jwt.sign(data, "secretkey", (err, token) => {
             data = {
-                status:"success",
+                status: "success",
                 token: token,
             }
-            return response.json(data);
+            return res.json(data);
         });
     } catch (error) {
-        response.status(500).send(error);
+        res.status(500).send(error);
     }
 });
 
-//adds a new address to the user
-app.post("/addAddress", verifyToken, async (request, response) => {
-    jwt.verify(request.token, "secretkey", async (err, authData) => {
-        if (err) {
-            res.sendStatus(403).send({ message: "Unauthorized" });
-        } else {
-            const address = new addressModel({
-                fullname: request.body.fullname,
-                phone: request.body.phone,
-                relationship: request.body.relationship,
-                email: request.body.email,
-                location: {
-                    type: "Point",
-                    coordinates: [request.body.longtitude, request.body.latitude],
-                },
-            });
-            try {
-                await address.save();
-                const user = await userModel.findById(authData.userId);
-                user.addressId.push(address._id.toString());
-                await user.save()
-                response.send("success")
-            }
-            catch (error) {
-                response.status(500).send(error);
-            }
-        }
+// add that adds a new address to the user
+app.post("/addAddress", verifyToken, async (req, res) => {
+    const address = new addressModel({
+        fullname: req.body.fullname,
+        phone: req.body.phone,
+        relationship: req.body.relationship,
+        email: req.body.email,
+        location: {
+            type: "Point",
+            coordinates: [req.body.coordinates[0], req.body.coordinates[1]],
+        },
     });
+    try {
+        await address.save();
+        const user = await userModel.findById(req.authData.userId);
+        user.addressId.push(address._id.toString());
+        await user.save()
+        res.send("success")
+    }
+    catch (error) {
+        res.status(500).send(error);
+    }
 });
 
-app.get("/getAddress", verifyToken, async (request, response) => {
-    jwt.verify(request.token, "secretkey", async (err, authData) => {
-        if (err) {
-            res.sendStatus(403).send({ message: "Unauthorized" });
-        } else {
-            const user = await userModel.findById(authData.userId);
-            const address = await addressModel.find({ _id: { $in: user.addressId } });
-            response.send(address);
-        }
-    })});
-
+//get contact info from the entry of a new contact
+app.get("/getAddress", verifyToken, async (req, res) => {
+    const user = await userModel.findById(req.authData.userId);
+    const address = await addressModel.find({ _id: { $in: user.addressId } });
+    res.send(address);
+});
 
 //  Seach by name
-app.post("/searchbyname", verifyToken, async (request, response) => {
-    jwt.verify(request.token, "secretkey", async (err, authData) => {
-        if (err) {
-            res.sendStatus(403).send({ message: "Unauthorized" });
-        } else {
-            const user = await userModel.findById(authData.userId);
-            const address = await addressModel.find({ _id: { $in: user.addressId } });
-            const search = request.body.search;
-            const result = address.filter((address) => {
-                return address.fullname.toLowerCase().includes(search.toLowerCase());
-            }
-            );
-            response.send(result);
-        }
-    })
+app.post("/searchbyname", verifyToken, async (req, res) => {
+    const user = await userModel.findById(req.authData.userId);
+    const address = await addressModel.find({ _id: { $in: user.addressId } });
+    const search = req.body.search;
+    const result = address.filter((address) => {
+        return address.fullname.toLowerCase().includes(search.toLowerCase());
+    });
+    res.send(result);
 });
 
 // Search by phone
-app.post("/searchbyphone", verifyToken, async (request, response) => {
-    jwt.verify(request.token, "secretkey", async (err, authData) => {
-        if (err) {
-            res.sendStatus(403).send({ message: "Unauthorized" });
-        } else {
-            const user = await userModel.findById(authData.userId);
-            const address = await addressModel.find({ _id: { $in: user.addressId } });
-            const search = request.body.search;
-            const result = address.filter((address) => {
-                return address.phone.toLowerCase().includes(search.toLowerCase());
-            }
-            );
-            response.send(result);
-        }
-    })
+app.post("/searchbyphone", verifyToken, async (req, res) => {
+    const user = await userModel.findById(req.authData.userId);
+    const address = await addressModel.find({ _id: { $in: user.addressId } });
+    const search = req.body.search;
+    const result = address.filter((address) => {
+        return address.phone.toLowerCase().includes(search.toLowerCase());
+    });
+    res.send(result);
 });
 
 // Seatch by email
-app.post("/searchbyemail", verifyToken, async (request, response) => {
-    jwt.verify(request.token, "secretkey", async (err, authData) => {
-        if (err) {
-            res.sendStatus(403).send({ message: "Unauthorized" });
-        } else {
-            const user = await userModel.findById(authData.userId);
-            const address = await addressModel.find({ _id: { $in: user.addressId } });
-            const search = request.body.search;
-            const result = address.filter((address) => {
-                return address.email.toLowerCase().includes(search.toLowerCase());
-            }
-            );
-            response.send(result);
-        }
-    })
+app.post("/searchbyemail", verifyToken, async (req, res) => {
+    const user = await userModel.findById(req.authData.userId);
+    const address = await addressModel.find({ _id: { $in: user.addressId } });
+    const search = req.body.search;
+    const result = address.filter((address) => {
+        return address.email.toLowerCase().includes(search.toLowerCase());
+    });
+    res.send(result);
 });
 
 // Search by relationship
-app.post("/searchbyrelationship", verifyToken, async (request, response) => {
-    jwt.verify(request.token, "secretkey", async (err, authData) => {
-        if (err) {
-            res.sendStatus(403).send({ message: "Unauthorized" });
-        } else {
-            const user = await userModel.findById(authData.userId);
-            const address = await addressModel.find({ _id: { $in: user.addressId } });
-            const search = request.body.search;
-            const result = address.filter((address) => {
-                return address.relationship.toLowerCase().includes(search.toLowerCase());
-            }
-            );
-            response.send(result);
-        }
-    })
+app.post("/searchbyrelationship", verifyToken, async (req, res) => {
+    const user = await userModel.findById(req.authData.userId);
+    const address = await addressModel.find({ _id: { $in: user.addressId } });
+    const search = req.body.search;
+    const result = address.filter((address) => {
+        return address.relationship.toLowerCase().includes(search.toLowerCase());
+    });
+    res.send(result);
+
 });
 
 
@@ -170,8 +132,14 @@ function verifyToken(req, res, next) {
     if (typeof token !== "undefined") {
         const bearer = token.split(" ");
         const bearerToken = bearer[1];
-        req.token = bearerToken;
-        next();
+        jwt.verify(bearerToken, "secretkey", async (err, authData) => {
+            if (err) {
+                res.sendStatus(403).send({ message: "Unauthorized" });
+            } else {
+                req.authData = authData;
+                next();
+            }
+        });
     }
     else {
         return res.status(403).send("Forbidden");
