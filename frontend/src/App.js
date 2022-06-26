@@ -1,4 +1,4 @@
-import '.styles/styles.css';
+import './styles/styles.css';
 import Signup from './Signup'
 import Login from './Login'
 import Home from './Home'
