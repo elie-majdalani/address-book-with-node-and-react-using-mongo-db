@@ -40,6 +40,7 @@ const Login = ({ setIsLoggedIn, setLogin }) => {
         }
         catch (err) {
             console.log(err);
+            alert('Login failed');
         }
     }
 

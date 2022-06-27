@@ -136,6 +136,7 @@ const Home = ({ setIsLoggedIn }) => {
                 setFullname(``);
                 setPhone(``);
                 setRelationship(``);
+                fetchData();
             }
         }
         catch (err) {
@@ -148,6 +149,9 @@ const Home = ({ setIsLoggedIn }) => {
             <div>
                 <h1>Home</h1>
             </div>
+            <div>
+                <button onClick={handleLogout}>Logout</button>
+            </div>
             <div className='search-bar'>
                 <select onChange={(e) => { setSearchType(e.target.value) }}>
                     <option value="fullname">Full Name</option>
@@ -159,7 +163,7 @@ const Home = ({ setIsLoggedIn }) => {
                 <button onClick={searchAddress} >Search</button>
             </div>
             <div className="Address-book">
-                <button onClick={handleLogout}>Logout</button>
+
                 <div className="Address-book-form">
                     <h1>Add contact</h1>
                     <input type="text" value={fullname} placeholder="Full Name" onChange={e => { setFullname(e.currentTarget.value) }} />

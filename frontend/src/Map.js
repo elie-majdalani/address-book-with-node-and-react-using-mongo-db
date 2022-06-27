@@ -54,14 +54,10 @@ function DraggableMarker({position, setPosition}) {
 }
 
 const Map = ({position,setPosition}) => {
-const state = {
-    lat: 33.8938,
-    lng: 35.5018,
-    zoom: 13,
-  }
-  const center = [state.lat, state.lng]
+
+  const center = [position.lat, position.lng]
   return (
-    <MapContainer center={center} zoom={state.zoom} style={{ height: '400px' }}>
+    <MapContainer center={center} zoom={13} style={{ height: '400px' }}>
       <TileLayer
         attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

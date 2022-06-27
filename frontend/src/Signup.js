@@ -22,9 +22,8 @@ const Signup = ({ setLogin }) => {
                     password
                 })
             });
-            const data = await res.json();
-            if (data.status === 'success') {
-                localStorage.setItem('token', data.data);
+            if (res.status === 200) {
+                switchPage();
             }
         }
         catch (err) {

@@ -14,7 +14,7 @@ app.post("/signup", async (req, res) => {
                 return res.status(403).send("User exists");
             }
             await user.save();
-            res.send("sucess");
+            res.status(200).send("success");
         }
         catch (error) {
             return res.status(500).send(error);
